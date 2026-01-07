@@ -21,7 +21,7 @@ DASHBOARD_HTML = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YNA2025 Vote Dashboard - The Best Couple</title>
+    <title>Y UNIVERSE AWARDS 2025 Vote Dashboard - The Best Couple</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
