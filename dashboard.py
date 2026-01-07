@@ -858,45 +858,45 @@ DASHBOARD_HTML = '''
             <div class="chart-title">📉 กราฟแนวโน้มคะแนน (วันที่เลือก)</div>
             <canvas id="timelineChart" height="80"></canvas>
         </div>
-    </div>
-    
-    <!-- Vote Package Calculator -->
-    <h2 class="section-title">🛒 คำนวณการซื้อแพ็คเกจโหวต</h2>
-    
-    <div class="calculator-section">
-        <div class="calc-input-container">
-            <label for="budgetInput">💰 ใส่จำนวนเงิน (บาท):</label>
-            <input type="number" id="budgetInput" placeholder="เช่น 10000" min="0">
-            <button onclick="calculatePackages()" class="calc-btn">คำนวณ</button>
-        </div>
         
-        <div class="package-info">
-            <div class="package-card">
-                <div class="pkg-price">4,000 ฿</div>
-                <div class="pkg-points">1,000 คะแนน</div>
-                <div class="pkg-rate">4 ฿/คะแนน</div>
-            </div>
-            <div class="package-card">
-                <div class="pkg-price">450 ฿</div>
-                <div class="pkg-points">100 คะแนน</div>
-                <div class="pkg-rate">4.5 ฿/คะแนน</div>
-            </div>
-            <div class="package-card">
-                <div class="pkg-price">50 ฿</div>
-                <div class="pkg-points">10 คะแนน</div>
-                <div class="pkg-rate">5 ฿/คะแนน</div>
-            </div>
-            <div class="package-card">
-                <div class="pkg-price">6 ฿</div>
-                <div class="pkg-points">1 คะแนน</div>
-                <div class="pkg-rate">6 ฿/คะแนน</div>
-            </div>
-        </div>
+        <!-- Vote Package Calculator -->
+        <h2 class="section-title">🛒 คำนวณการซื้อแพ็คเกจโหวต</h2>
         
-        <div class="calc-result" id="calcResult" style="display: none;">
-            <div class="result-title">📋 สรุปการซื้อแพ็คเกจ</div>
-            <div class="result-content" id="resultContent"></div>
-            <div class="result-summary" id="resultSummary"></div>
+        <div class="calculator-section">
+            <div class="calc-input-container">
+                <label for="budgetInput">💰 ใส่จำนวนเงิน (บาท):</label>
+                <input type="number" id="budgetInput" placeholder="เช่น 10000" min="0">
+                <button onclick="calculatePackages()" class="calc-btn">คำนวณ</button>
+            </div>
+            
+            <div class="package-info">
+                <div class="package-card">
+                    <div class="pkg-price">4,000 ฿</div>
+                    <div class="pkg-points">1,000 คะแนน</div>
+                    <div class="pkg-rate">4 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">450 ฿</div>
+                    <div class="pkg-points">100 คะแนน</div>
+                    <div class="pkg-rate">4.5 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">50 ฿</div>
+                    <div class="pkg-points">10 คะแนน</div>
+                    <div class="pkg-rate">5 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">6 ฿</div>
+                    <div class="pkg-points">1 คะแนน</div>
+                    <div class="pkg-rate">6 ฿/คะแนน</div>
+                </div>
+            </div>
+            
+            <div class="calc-result" id="calcResult" style="display: none;">
+                <div class="result-title">📋 สรุปการซื้อแพ็คเกจ</div>
+                <div class="result-content" id="resultContent"></div>
+                <div class="result-summary" id="resultSummary"></div>
+            </div>
         </div>
     </div>
 
