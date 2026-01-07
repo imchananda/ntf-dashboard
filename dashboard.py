@@ -28,13 +28,9 @@ class VoteScraper:
     def __init__(self):
         self.session = requests.Session()
         self.is_logged_in = False
-        
-        # ดึงค่าจาก Environment Variables
-        self.username = os.environ.get('VOTE_USERNAME', '')
-        self.password = os.environ.get('VOTE_PASSWORD', '')
-        self.login_url = os.environ.get('LOGIN_URL', 'https://acmonlinebiz.com/yna2025/login_action.php')
-        self.login_page = os.environ.get('LOGIN_PAGE', 'https://acmonlinebiz.com/yna2025/login.php')
-        self.data_url = os.environ.get('DATA_URL', 'https://acmonlinebiz.com/yna2025/votesummary.php?tpid=4')
+        self.login_url = 'https://acmonlinebiz.com/yna2025/login_action.php'
+        self.login_page = 'https://acmonlinebiz.com/yna2025/login.php'
+        self.data_url = 'https://acmonlinebiz.com/yna2025/votesummary.php?tpid=4'
         
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -42,17 +38,26 @@ class VoteScraper:
             'Accept-Language': 'th,en;q=0.9',
         })
     
+    def get_credentials(self):
+        """ดึง credentials จาก environment variables"""
+        username = os.environ.get('VOTE_USERNAME', '')
+        password = os.environ.get('VOTE_PASSWORD', '')
+        return username, password
+    
     def login(self) -> bool:
-        if not self.username or not self.password:
-            print("⚠️ ไม่มี credentials - ข้ามการดึงข้อมูล")
+        username, password = self.get_credentials()
+        
+        if not username or not password:
+            print(f"⚠️ ไม่มี credentials - VOTE_USERNAME={bool(username)}, VOTE_PASSWORD={bool(password)}")
             return False
             
         try:
+            print(f"🔐 กำลัง login ด้วย user: {username[:3]}***")
             self.session.get(self.login_page, timeout=30)
             
             payload = {
-                'username': self.username,
-                'userpassword': self.password,
+                'username': username,
+                'userpassword': password,
             }
             
             response = self.session.post(self.login_url, data=payload, timeout=30, allow_redirects=True)
@@ -62,7 +67,7 @@ class VoteScraper:
                 print("✅ Login สำเร็จ")
                 return True
                 
-            print("❌ Login ไม่สำเร็จ")
+            print("❌ Login ไม่สำเร็จ - ตรวจสอบ username/password")
             return False
             
         except Exception as e:
@@ -200,12 +205,13 @@ def scraper_loop():
 
 # Start scraper thread
 def start_scraper():
-    if scraper.username and scraper.password:
+    username, password = scraper.get_credentials()
+    if username and password:
         thread = threading.Thread(target=scraper_loop, daemon=True)
         thread.start()
         print("🚀 Scraper thread started")
     else:
-        print("⚠️ ไม่มี credentials - Scraper ไม่ทำงาน")
+        print(f"⚠️ ไม่มี credentials - Scraper ไม่ทำงาน (จะดึงเมื่อเรียก /api/scrape)")
 
 # ========== END SCRAPER ==========
 
