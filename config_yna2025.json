@@ -1,0 +1,18 @@
+{
+    "_comment": "Config สำหรับดึงผลโหวต YNA2025 - The Best Couple",
+    
+    "login_url": "https://acmonlinebiz.com/yna2025/login_action.php",
+    "login_page": "https://acmonlinebiz.com/yna2025/login.php",
+    "data_url": "https://acmonlinebiz.com/yna2025/votesummary.php?tpid=4",
+    
+    "username": "chan.kwoninine@gmail.com",
+    "password": "ธฟำโฟืัๅๅต/",
+    
+    "username_field": "username",
+    "password_field": "userpassword",
+    
+    "output_dir": "data_yna2025",
+    "output_format": "json",
+    "save_raw_html": true,
+    "interval_hours": 1
+}

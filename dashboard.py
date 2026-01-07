@@ -1,0 +1,1159 @@
+"""
+YNA2025 Vote Dashboard
+แสดงผลโหวตแบบ real-time ผ่าน Web Browser
+พร้อมประวัติคะแนนรายชั่วโมง แยกเป็นวัน
+"""
+
+from flask import Flask, render_template_string, jsonify, request
+import json
+from pathlib import Path
+from datetime import datetime
+import os
+
+app = Flask(__name__)
+
+# โฟลเดอร์เก็บข้อมูล
+DATA_DIR = Path('data_yna2025')
+
+DASHBOARD_HTML = '''
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YNA2025 Vote Dashboard - The Best Couple</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+        
+        .update-time {
+            color: #48dbfb;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-card.leader {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+            border-color: #ffd700;
+        }
+        
+        .stat-card .rank {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .code {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #48dbfb;
+        }
+        
+        .stat-card.leader .code {
+            color: #ffd700;
+        }
+        
+        .stat-card .percentage {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .stat-card.leader .percentage {
+            color: #ffd700;
+        }
+        
+        .stat-card .names {
+            font-size: 0.75rem;
+            color: #ccc;
+            line-height: 1.3;
+        }
+        
+        .stat-card .series {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #48dbfb;
+        }
+        
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(72, 219, 251, 0.2);
+            color: #48dbfb;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .rank-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); color: #fff; }
+        .rank-other { background: rgba(255, 255, 255, 0.2); color: #fff; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48dbfb, #ff6b6b);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .auto-refresh {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(72, 219, 251, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            border: 1px solid #48dbfb;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #a0a0a0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #feca57;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(254, 202, 87, 0.3);
+        }
+        
+        .history-table th, .history-table td {
+            padding: 8px 6px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .history-table th:first-child, .history-table td:first-child {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background: #1a1a2e;
+            z-index: 1;
+            min-width: 70px;
+        }
+        
+        .change-up { color: #1dd1a1; }
+        .change-down { color: #ff6b6b; }
+        .change-same { color: #a0a0a0; }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .summary-card .label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #48dbfb;
+        }
+        
+        /* Date Selector */
+        .date-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .date-selector label {
+            color: #a0a0a0;
+            margin-right: 10px;
+        }
+        
+        .date-btn {
+            padding: 10px 20px;
+            border: 2px solid #48dbfb;
+            background: transparent;
+            color: #48dbfb;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .date-btn:hover {
+            background: rgba(72, 219, 251, 0.2);
+        }
+        
+        .date-btn.active {
+            background: #48dbfb;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab-btn.active {
+            background: rgba(72, 219, 251, 0.3);
+            color: #48dbfb;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .money-highlight {
+            color: #1dd1a1;
+            font-weight: bold;
+        }
+        
+        .votes-highlight {
+            color: #feca57;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 YNA2025 Vote Dashboard</h1>
+            <div class="subtitle">The Best Couple - ผลโหวตแบบ Real-time</div>
+            <div class="update-time" id="updateTime">กำลังโหลด...</div>
+        </header>
+        
+        <!-- Summary Stats -->
+        <div class="summary-stats" id="summaryStats">
+        </div>
+        
+        <!-- Current Rankings -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">กำลังโหลดข้อมูล...</div>
+        </div>
+        
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-title">📊 กราฟแท่งเปรียบเทียบ (ล่าสุด)</div>
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🥧 สัดส่วนคะแนนโหวต</div>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Current Summary Table -->
+        <div class="table-container">
+            <div class="chart-title">📋 สรุปอันดับปัจจุบัน (%, คะแนน, เงิน)</div>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>อันดับ</th>
+                        <th>รหัส</th>
+                        <th>ชื่อคู่</th>
+                        <th>% ล่าสุด</th>
+                        <th>คะแนนสะสม</th>
+                        <th>มูลค่า (บาท)</th>
+                        <th>สัดส่วน</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- History Section -->
+        <h2 class="section-title">📈 ประวัติรายชั่วโมง (เลือกวัน)</h2>
+        
+        <!-- Date Selector -->
+        <div class="date-selector" id="dateSelector">
+            <label>📅 เลือกวัน:</label>
+            <div id="dateButtons"></div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('percent')">📊 เปอร์เซ็นต์ (%)</button>
+                <button class="tab-btn" onclick="showTab('votes')">🎯 จำนวนโหวต</button>
+                <button class="tab-btn" onclick="showTab('money')">💰 จำนวนเงิน (บาท)</button>
+            </div>
+            
+            <!-- Percent Tab -->
+            <div class="tab-content active" id="tab-percent">
+                <div class="table-container" style="margin-bottom: 0;">
+                    <div class="chart-title">📊 ประวัติเปอร์เซ็นต์รายชั่วโมง</div>
+                    <table class="history-table" id="percentTable">
+                        <thead id="percentHead"></thead>
+                        <tbody id="percentBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Votes Tab -->
+            <div class="tab-content" id="tab-votes">
+                <div class="table-container" style="margin-bottom: 0;">
+                    <div class="chart-title">🎯 ประวัติจำนวนโหวตรายชั่วโมง</div>
+                    <table class="history-table" id="votesTable">
+                        <thead id="votesHead"></thead>
+                        <tbody id="votesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Money Tab -->
+            <div class="tab-content" id="tab-money">
+                <div class="table-container" style="margin-bottom: 0;">
+                    <div class="chart-title">💰 ประวัติจำนวนเงินรายชั่วโมง (บาท)</div>
+                    <table class="history-table" id="moneyTable">
+                        <thead id="moneyHead"></thead>
+                        <tbody id="moneyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline Chart -->
+        <div class="chart-container full-width" style="margin-top: 30px;">
+            <div class="chart-title">📉 กราฟแนวโน้มคะแนน (วันที่เลือก)</div>
+            <canvas id="timelineChart" height="100"></canvas>
+        </div>
+    </div>
+    
+    <div class="auto-refresh">
+        <span class="pulse">🔴</span> Auto-refresh ทุก 60 วินาที
+    </div>
+    
+    <script>
+        let barChart, pieChart, timelineChart;
+        let allData = null;
+        let selectedDate = null;
+        let availableDates = [];
+        
+        const colors = [
+            '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1',
+            '#5f27cd', '#54a0ff', '#00d2d3', '#ff9f43', '#ee5a24'
+        ];
+        
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+        
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('th-TH');
+        }
+        
+        async function fetchAllData() {
+            try {
+                const [dataRes, votesRes] = await Promise.all([
+                    fetch('/api/data'),
+                    fetch('/api/votes')
+                ]);
+                
+                const data = await dataRes.json();
+                const votes = await votesRes.json();
+                
+                if (data.error) {
+                    document.getElementById('statsGrid').innerHTML = 
+                        '<div class="loading">❌ ' + data.error + '</div>';
+                    return;
+                }
+                
+                allData = { current: data, votes: votes };
+                
+                // Get available dates
+                if (votes.history) {
+                    const dates = new Set();
+                    votes.history.forEach(h => {
+                        const date = h.time.split(' ')[0];
+                        dates.add(date);
+                    });
+                    availableDates = Array.from(dates).sort();
+                    
+                    if (!selectedDate && availableDates.length > 0) {
+                        selectedDate = availableDates[availableDates.length - 1]; // Latest date
+                    }
+                }
+                
+                updateDashboard(data);
+                updateDateButtons();
+                updateVotesDisplay(votes);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        
+        function updateDateButtons() {
+            let html = '';
+            availableDates.forEach(date => {
+                const isActive = date === selectedDate ? 'active' : '';
+                html += `<button class="date-btn ${isActive}" onclick="selectDate('${date}')">${date}</button>`;
+            });
+            document.getElementById('dateButtons').innerHTML = html;
+        }
+        
+        function selectDate(date) {
+            selectedDate = date;
+            updateDateButtons();
+            if (allData && allData.votes) {
+                updateVotesDisplay(allData.votes);
+            }
+        }
+        
+        function updateDashboard(data) {
+            document.getElementById('updateTime').innerHTML = 
+                '🕐 อัพเดทล่าสุด: ' + data.timestamp + ' | ไฟล์: ' + data.filename;
+            
+            const summary = data.summary;
+            
+            // Stats Cards
+            let statsHtml = '';
+            summary.forEach((item, index) => {
+                const isLeader = index === 0;
+                statsHtml += `
+                    <div class="stat-card ${isLeader ? 'leader' : ''}">
+                        <div class="rank">${isLeader ? '👑 #1' : '#' + (index + 1)}</div>
+                        <div class="code">${item.code}</div>
+                        <div class="percentage">${item.percentage.toFixed(2)}%</div>
+                        <div class="names">${item.names}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('statsGrid').innerHTML = statsHtml;
+            
+            updateCharts(summary);
+        }
+        
+        function updateVotesDisplay(data) {
+            if (!data || data.error) return;
+            
+            const rates = data.rates;
+            
+            // Summary Stats
+            let summaryHtml = `
+                <div class="summary-card">
+                    <div class="label">📁 จำนวนข้อมูล</div>
+                    <div class="value">${data.history?.length || 0} ครั้ง</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">🎯 ฐานโหวตรวม</div>
+                    <div class="value votes-highlight">${formatNumber(data.total_base_votes)}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">💰 มูลค่ารวม</div>
+                    <div class="value money-highlight">${formatNumber(data.total_money)} ฿</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">📐 อัตรา</div>
+                    <div class="value" style="font-size: 1rem;">1% = ${formatNumber(rates.points_per_percent)} = ${formatNumber(rates.baht_per_percent)}฿</div>
+                </div>
+            `;
+            document.getElementById('summaryStats').innerHTML = summaryHtml;
+            
+            // Summary Table with votes and money
+            let summaryBodyHtml = '';
+            if (data.latest_summary && allData.current.summary) {
+                allData.current.summary.forEach((item, index) => {
+                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other';
+                    const voteData = data.latest_summary.find(v => v.code === item.code) || {};
+                    
+                    summaryBodyHtml += `
+                        <tr>
+                            <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
+                            <td><strong>${item.code}</strong></td>
+                            <td style="font-size: 0.85rem;">${item.names}</td>
+                            <td><strong>${item.percentage.toFixed(2)}%</strong></td>
+                            <td class="votes-highlight">${formatNumber(voteData.points || 0)}</td>
+                            <td class="money-highlight">${formatNumber(voteData.money || 0)} ฿</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${item.percentage}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('summaryBody').innerHTML = summaryBodyHtml;
+            
+            // Filter history by selected date
+            const filteredHistory = data.history?.filter(h => {
+                const date = h.time.split(' ')[0];
+                return date === selectedDate;
+            }) || [];
+            
+            if (filteredHistory.length === 0) {
+                document.getElementById('percentHead').innerHTML = '<tr><th>ไม่มีข้อมูล</th></tr>';
+                document.getElementById('percentBody').innerHTML = '';
+                document.getElementById('votesHead').innerHTML = '<tr><th>ไม่มีข้อมูล</th></tr>';
+                document.getElementById('votesBody').innerHTML = '';
+                document.getElementById('moneyHead').innerHTML = '<tr><th>ไม่มีข้อมูล</th></tr>';
+                document.getElementById('moneyBody').innerHTML = '';
+                return;
+            }
+            
+            const codes = data.codes || [];
+            
+            // Headers (show only time, not date)
+            let headHtml = '<tr><th>รหัส</th>';
+            filteredHistory.forEach(h => {
+                const time = h.time.split(' ')[1] || h.time;
+                headHtml += `<th>${time}</th>`;
+            });
+            headHtml += '<th>รวม/ล่าสุด</th></tr>';
+            
+            document.getElementById('percentHead').innerHTML = headHtml;
+            document.getElementById('votesHead').innerHTML = headHtml;
+            document.getElementById('moneyHead').innerHTML = headHtml;
+            
+            // Bodies
+            let percentBodyHtml = '';
+            let votesBodyHtml = '';
+            let moneyBodyHtml = '';
+            
+            codes.forEach(code => {
+                // Percent row
+                percentBodyHtml += `<tr><td><strong>${code}</strong></td>`;
+                let lastPct = 0;
+                let prevPct = null;
+                filteredHistory.forEach(h => {
+                    const pct = h.codes[code]?.percentage || 0;
+                    lastPct = pct;
+                    
+                    let changeClass = 'change-same';
+                    let arrow = '';
+                    if (prevPct !== null) {
+                        if (pct > prevPct) { changeClass = 'change-up'; arrow = ' ↑'; }
+                        else if (pct < prevPct) { changeClass = 'change-down'; arrow = ' ↓'; }
+                    }
+                    prevPct = pct;
+                    
+                    percentBodyHtml += `<td class="${changeClass}">${pct.toFixed(2)}%${arrow}</td>`;
+                });
+                percentBodyHtml += `<td><strong>${lastPct.toFixed(2)}%</strong></td></tr>`;
+                
+                // Votes row
+                votesBodyHtml += `<tr><td><strong>${code}</strong></td>`;
+                let lastVotes = 0;
+                filteredHistory.forEach(h => {
+                    const points = h.codes[code]?.points || 0;
+                    const added = h.codes[code]?.points_added || 0;
+                    lastVotes = points;
+                    
+                    let addedHtml = added > 0 ? `<br><span class="change-up">+${formatNumber(added)}</span>` : '';
+                    votesBodyHtml += `<td>${formatNumber(points)}${addedHtml}</td>`;
+                });
+                votesBodyHtml += `<td class="votes-highlight"><strong>${formatNumber(lastVotes)}</strong></td></tr>`;
+                
+                // Money row
+                moneyBodyHtml += `<tr><td><strong>${code}</strong></td>`;
+                let lastMoney = 0;
+                filteredHistory.forEach(h => {
+                    const money = h.codes[code]?.money || 0;
+                    const added = h.codes[code]?.money_added || 0;
+                    lastMoney = money;
+                    
+                    let addedHtml = added > 0 ? `<br><span class="change-up">+${formatNumber(added)}</span>` : '';
+                    moneyBodyHtml += `<td>${formatNumber(money)}${addedHtml}</td>`;
+                });
+                moneyBodyHtml += `<td class="money-highlight"><strong>${formatNumber(lastMoney)} ฿</strong></td></tr>`;
+            });
+            
+            // Total row
+            percentBodyHtml += `<tr style="background: rgba(72, 219, 251, 0.1);"><td><strong>รวม</strong></td>`;
+            votesBodyHtml += `<tr style="background: rgba(72, 219, 251, 0.1);"><td><strong>ฐานรวม</strong></td>`;
+            moneyBodyHtml += `<tr style="background: rgba(72, 219, 251, 0.1);"><td><strong>รวม</strong></td>`;
+            
+            filteredHistory.forEach(h => {
+                percentBodyHtml += `<td><strong>100%</strong></td>`;
+                votesBodyHtml += `<td><strong>${formatNumber(h.total_base_votes)}</strong></td>`;
+                moneyBodyHtml += `<td><strong>${formatNumber(h.total_money)}</strong></td>`;
+            });
+            
+            percentBodyHtml += `<td><strong>100%</strong></td></tr>`;
+            votesBodyHtml += `<td class="votes-highlight"><strong>${formatNumber(data.total_base_votes)}</strong></td></tr>`;
+            moneyBodyHtml += `<td class="money-highlight"><strong>${formatNumber(data.total_money)} ฿</strong></td></tr>`;
+            
+            document.getElementById('percentBody').innerHTML = percentBodyHtml;
+            document.getElementById('votesBody').innerHTML = votesBodyHtml;
+            document.getElementById('moneyBody').innerHTML = moneyBodyHtml;
+            
+            // Timeline Chart for selected date
+            updateTimelineChart(filteredHistory, codes);
+        }
+        
+        function updateCharts(summary) {
+            const labels = summary.map(s => s.code);
+            const percentages = summary.map(s => s.percentage);
+            
+            if (barChart) barChart.destroy();
+            barChart = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Vote (%)',
+                        data: percentages,
+                        backgroundColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { display: false }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+            
+            if (pieChart) pieChart.destroy();
+            pieChart = new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: percentages,
+                        backgroundColor: colors,
+                        borderColor: '#1a1a2e',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#fff', padding: 10 } }
+                    }
+                }
+            });
+        }
+        
+        function updateTimelineChart(history, codes) {
+            if (!history || history.length === 0) return;
+            
+            const labels = history.map(h => {
+                const time = h.time.split(' ')[1] || h.time;
+                return time;
+            });
+            
+            const datasets = codes.map((code, index) => ({
+                label: code,
+                data: history.map(h => h.codes[code]?.percentage || 0),
+                borderColor: colors[index % colors.length],
+                backgroundColor: 'transparent',
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 3
+            }));
+            
+            if (timelineChart) timelineChart.destroy();
+            timelineChart = new Chart(document.getElementById('timelineChart'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#fff', padding: 10, usePointStyle: true } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+        }
+        
+        // Initial load
+        fetchAllData();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(fetchAllData, 60000);
+    </script>
+</body>
+</html>
+'''
+
+def get_latest_data():
+    """ดึงข้อมูลล่าสุดจากไฟล์ JSON"""
+    try:
+        # หาไฟล์ JSON ล่าสุด
+        json_files = sorted(DATA_DIR.glob('vote_*.json'), reverse=True)
+        
+        if not json_files:
+            return {'error': 'ไม่พบไฟล์ข้อมูล - รัน scraper ก่อน'}
+        
+        latest_file = json_files[0]
+        
+        with open(latest_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        data['filename'] = latest_file.name
+        return data
+        
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def get_all_history():
+    """ดึงประวัติข้อมูลทั้งหมด"""
+    try:
+        json_files = sorted(DATA_DIR.glob('vote_*.json'))
+        
+        if not json_files:
+            return {'error': 'ไม่พบไฟล์ข้อมูล'}
+        
+        history = []
+        all_codes = set()
+        
+        for file in json_files:
+            try:
+                with open(file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # แปลง timestamp เป็นเวลาที่อ่านง่าย
+                timestamp = data.get('timestamp', '')
+                if timestamp:
+                    try:
+                        dt = datetime.fromisoformat(timestamp)
+                        time_str = dt.strftime('%d/%m %H:%M')
+                    except:
+                        time_str = timestamp[:16]
+                else:
+                    # ดึงเวลาจากชื่อไฟล์
+                    time_str = file.stem.replace('vote_', '')
+                
+                # สร้าง dict ของ code -> percentage
+                vote_data = {}
+                if 'summary' in data:
+                    for item in data['summary']:
+                        code = item.get('code', '')
+                        pct = item.get('percentage', 0)
+                        vote_data[code] = pct
+                        all_codes.add(code)
+                
+                history.append({
+                    'time': time_str,
+                    'filename': file.name,
+                    'data': vote_data
+                })
+                
+            except Exception as e:
+                continue
+        
+        # เรียง codes
+        codes = sorted(list(all_codes))
+        
+        return {
+            'history': history,
+            'codes': codes,
+            'total_files': len(history)
+        }
+        
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def calculate_votes_and_money():
+    """
+    คำนวณคะแนนและเงินจาก % ที่เปลี่ยนแปลง
+    กฎ: 1% = 1000 คะแนน = 4000 บาท
+    คะแนนจะไม่มีทางลดลง (เท่าเดิมหรือเพิ่มขึ้นเท่านั้น)
+    """
+    try:
+        json_files = sorted(DATA_DIR.glob('vote_*.json'))
+        
+        if not json_files:
+            return {'error': 'ไม่พบไฟล์ข้อมูล'}
+        
+        # อัตราแปลง
+        POINTS_PER_PERCENT = 1000  # 1% = 1000 คะแนน
+        BAHT_PER_POINT = 4  # 1 คะแนน = 4 บาท
+        
+        all_codes = set()
+        history_data = []
+        
+        # โหลดข้อมูลทั้งหมดก่อน
+        for file in json_files:
+            try:
+                with open(file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                timestamp = data.get('timestamp', '')
+                if timestamp:
+                    try:
+                        dt = datetime.fromisoformat(timestamp)
+                        time_str = dt.strftime('%d/%m %H:%M')
+                    except:
+                        time_str = timestamp[:16]
+                else:
+                    time_str = file.stem.replace('vote_', '')
+                
+                vote_data = {}
+                if 'summary' in data:
+                    for item in data['summary']:
+                        code = item.get('code', '')
+                        pct = item.get('percentage', 0)
+                        vote_data[code] = pct
+                        all_codes.add(code)
+                
+                history_data.append({
+                    'time': time_str,
+                    'data': vote_data
+                })
+            except:
+                continue
+        
+        if not history_data:
+            return {'error': 'ไม่มีข้อมูล'}
+        
+        codes = sorted(list(all_codes))
+        
+        # คำนวณ cumulative votes และ money
+        # เริ่มจาก snapshot แรก แล้วบวกเพิ่มจากการเปลี่ยนแปลง
+        
+        cumulative_points = {code: 0 for code in codes}
+        cumulative_money = {code: 0 for code in codes}
+        
+        result_history = []
+        prev_percentages = None
+        total_base_votes = 0  # ฐานโหวตรวมสะสม
+        
+        for i, entry in enumerate(history_data):
+            current_pct = entry['data']
+            time_str = entry['time']
+            
+            hour_data = {
+                'time': time_str,
+                'codes': {}
+            }
+            
+            if i == 0:
+                # ครั้งแรก - ใช้ % โดยตรงเป็นฐาน
+                # สมมติฐานโหวตเริ่มต้น = 100,000 คะแนน (100%)
+                initial_base = 100000
+                total_base_votes = initial_base
+                
+                for code in codes:
+                    pct = current_pct.get(code, 0)
+                    points = (pct / 100) * initial_base
+                    money = points * BAHT_PER_POINT
+                    
+                    cumulative_points[code] = points
+                    cumulative_money[code] = money
+                    
+                    hour_data['codes'][code] = {
+                        'percentage': pct,
+                        'points': round(points),
+                        'money': round(money),
+                        'points_added': round(points),
+                        'money_added': round(money)
+                    }
+                
+                hour_data['total_base_votes'] = total_base_votes
+                hour_data['total_money'] = round(total_base_votes * BAHT_PER_POINT)
+                
+            else:
+                # ครั้งถัดไป - คำนวณจากการเปลี่ยนแปลง %
+                # หาว่ามีการเพิ่มคะแนนใหม่เท่าไหร่
+                
+                # คำนวณ new votes ที่เข้ามาในชั่วโมงนี้
+                # โดยดูจาก % ที่เปลี่ยนแปลง
+                
+                # หาผู้ที่ % เพิ่มขึ้น
+                max_pct_increase = 0
+                for code in codes:
+                    curr = current_pct.get(code, 0)
+                    prev = prev_percentages.get(code, 0)
+                    if curr > prev:
+                        # มีคนโหวตเพิ่ม
+                        max_pct_increase = max(max_pct_increase, curr - prev)
+                
+                # ประมาณ new votes จาก % change
+                # ถ้า % เปลี่ยน แสดงว่ามี votes ใหม่เข้ามา
+                # คำนวณ: new_votes = delta_pct * POINTS_PER_PERCENT * scale_factor
+                
+                if max_pct_increase > 0:
+                    # มี votes ใหม่เข้ามา
+                    # ประมาณจำนวน votes ใหม่
+                    new_votes_this_hour = 0
+                    
+                    for code in codes:
+                        curr = current_pct.get(code, 0)
+                        prev = prev_percentages.get(code, 0)
+                        
+                        if curr > prev:
+                            # คำนวณ points ที่เพิ่ม
+                            # delta% * 1000 = points added
+                            delta_pct = curr - prev
+                            points_added = delta_pct * POINTS_PER_PERCENT
+                            new_votes_this_hour += points_added
+                    
+                    total_base_votes += new_votes_this_hour
+                
+                # คำนวณ points ปัจจุบันของแต่ละคนจาก % ใหม่
+                for code in codes:
+                    pct = current_pct.get(code, 0)
+                    prev_pct = prev_percentages.get(code, 0)
+                    
+                    # คะแนนปัจจุบัน = % * total_base
+                    new_points = (pct / 100) * total_base_votes
+                    
+                    # คะแนนต้องไม่ลดลง
+                    if new_points < cumulative_points[code]:
+                        new_points = cumulative_points[code]
+                    
+                    points_added = new_points - cumulative_points[code]
+                    money_added = points_added * BAHT_PER_POINT
+                    
+                    cumulative_points[code] = new_points
+                    cumulative_money[code] = new_points * BAHT_PER_POINT
+                    
+                    hour_data['codes'][code] = {
+                        'percentage': pct,
+                        'points': round(cumulative_points[code]),
+                        'money': round(cumulative_money[code]),
+                        'points_added': round(points_added),
+                        'money_added': round(money_added)
+                    }
+                
+                hour_data['total_base_votes'] = round(total_base_votes)
+                hour_data['total_money'] = round(total_base_votes * BAHT_PER_POINT)
+            
+            result_history.append(hour_data)
+            prev_percentages = current_pct.copy()
+        
+        # สรุปล่าสุด
+        latest_summary = []
+        for code in codes:
+            latest_summary.append({
+                'code': code,
+                'points': round(cumulative_points[code]),
+                'money': round(cumulative_money[code])
+            })
+        
+        latest_summary.sort(key=lambda x: x['points'], reverse=True)
+        
+        return {
+            'history': result_history,
+            'codes': codes,
+            'latest_summary': latest_summary,
+            'total_base_votes': round(total_base_votes),
+            'total_money': round(total_base_votes * BAHT_PER_POINT),
+            'rates': {
+                'points_per_percent': POINTS_PER_PERCENT,
+                'baht_per_point': BAHT_PER_POINT,
+                'baht_per_percent': POINTS_PER_PERCENT * BAHT_PER_POINT
+            }
+        }
+        
+    except Exception as e:
+        return {'error': str(e)}
+
+
+@app.route('/')
+def dashboard():
+    return render_template_string(DASHBOARD_HTML)
+
+@app.route('/api/data')
+def api_data():
+    return jsonify(get_latest_data())
+
+@app.route('/api/history')
+def api_history():
+    return jsonify(get_all_history())
+
+@app.route('/api/votes')
+def api_votes():
+    return jsonify(calculate_votes_and_money())
+
+if __name__ == '__main__':
+    print("=" * 50)
+    print("🚀 YNA2025 Vote Dashboard")
+    print("=" * 50)
+    print("📊 เปิด browser ไปที่: http://localhost:5000")
+    print("🔄 Dashboard จะ auto-refresh ทุก 60 วินาที")
+    print("❌ หยุด: กด Ctrl+C")
+    print("=" * 50)
+    
+    app.run(host='0.0.0.0', port=5000, debug=False)

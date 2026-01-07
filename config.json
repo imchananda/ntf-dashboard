@@ -1,0 +1,19 @@
+{
+  "_comment": "Config สำหรับ acmonlinebiz.com/yna2025",
+  "login_url": "https://acmonlinebiz.com/yna2025/login_action.php",
+  "login_page": "https://acmonlinebiz.com/yna2025/login.php",
+  "data_url": "https://acmonlinebiz.com/yna2025/votesummary.php?tpid=4",
+  "username": "chan.kwoninine@gmail.com",
+  "password": "ธฟำโฟืัๅๅต/",
+  "username_field": "username",
+  "password_field": "userpassword",
+  "selectors": {
+    "title": "h1, h2, .page-title",
+    "content": ".container, .content",
+    "tables": "table"
+  },
+  "output_dir": "data",
+  "output_format": "json",
+  "save_raw_html": true,
+  "interval_hours": 1
+}
