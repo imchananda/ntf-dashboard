@@ -390,7 +390,7 @@ DASHBOARD_HTML = '''
 <body>
     <div class="container">
         <header>
-            <h1>🏆 YNA2025 Vote Dashboard</h1>
+            <h1>🏆 Y UNIVERSE AWARDS 2025</h1>
             <div class="subtitle">The Best Couple - ผลโหวตแบบ Real-time</div>
             <div class="update-time" id="updateTime">กำลังโหลด...</div>
         </header>
