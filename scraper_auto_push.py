@@ -311,8 +311,16 @@ def git_push():
         
         if 'nothing to commit' in result.stdout or 'nothing to commit' in result.stderr:
             print("ℹ️ ไม่มีการเปลี่ยนแปลง")
+            # try pull anyway just in case
+            subprocess.run(['git', 'pull'], capture_output=True, text=True)
             return True
         
+        # Pull before Push
+        print("📥 กำลังดึงข้อมูลล่าสุด (git pull)...")
+        pull_result = subprocess.run(['git', 'pull'], capture_output=True, text=True)
+        if pull_result.returncode != 0:
+             print(f"⚠️ Git pull warning: {pull_result.stderr}")
+
         # Push
         push_result = subprocess.run(['git', 'push'], capture_output=True, text=True)
         

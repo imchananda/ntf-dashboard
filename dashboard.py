@@ -1392,8 +1392,8 @@ def get_all_history():
 def calculate_votes_and_money():
     """
     คำนวณคะแนนและเงินจาก % ที่เปลี่ยนแปลง
-    กฎ: 1% = 1000 คะแนน = 4000 บาท
-    คะแนนจะไม่มีทางลดลง (เท่าเดิมหรือเพิ่มขึ้นเท่านั้น)
+    สูตร Cumulative Gain Only: นับเฉพาะ % ที่เพิ่มขึ้นเป็นคะแนนสะสม
+    1% = 1000 คะแนน = 4000 บาท
     """
     try:
         json_files = sorted(DATA_DIR.glob('vote_*.json'))
@@ -1404,6 +1404,7 @@ def calculate_votes_and_money():
         # อัตราแปลง
         POINTS_PER_PERCENT = 1000  # 1% = 1000 คะแนน
         BAHT_PER_POINT = 4  # 1 คะแนน = 4 บาท
+        BASE_TOTAL_VOTES = 100000  # ฐานคะแนนสำหรับแปลง % เป็นโหวต
         
         all_codes = set()
         history_data = []
@@ -1415,6 +1416,8 @@ def calculate_votes_and_money():
                     data = json.load(f)
                 
                 timestamp = data.get('timestamp', '')
+                raw_timestamp = timestamp  # Keep for sorting
+                
                 if timestamp:
                     try:
                         dt = datetime.fromisoformat(timestamp)
@@ -1423,6 +1426,7 @@ def calculate_votes_and_money():
                         time_str = timestamp[:16]
                 else:
                     time_str = file.stem.replace('vote_', '')
+                    raw_timestamp = time_str  # Fallback for sorting
                 
                 vote_data = {}
                 if 'summary' in data:
@@ -1434,6 +1438,7 @@ def calculate_votes_and_money():
                 
                 history_data.append({
                     'time': time_str,
+                    'raw_timestamp': raw_timestamp,
                     'data': vote_data
                 })
             except:
@@ -1442,17 +1447,20 @@ def calculate_votes_and_money():
         if not history_data:
             return {'error': 'ไม่มีข้อมูล'}
         
+        # Sort by timestamp to match dashboard_two.py
+        history_data.sort(key=lambda x: x['raw_timestamp'])
+        
+        print(f"DEBUG: dashboard.py loaded {len(history_data)} records")
+        if history_data:
+            print(f"DEBUG: First: {history_data[0]['raw_timestamp']}, Last: {history_data[-1]['raw_timestamp']}")
+        
         codes = sorted(list(all_codes))
         
-        # คำนวณ cumulative votes และ money
-        # เริ่มจาก snapshot แรก แล้วบวกเพิ่มจากการเปลี่ยนแปลง
-        
-        cumulative_points = {code: 0 for code in codes}
-        cumulative_money = {code: 0 for code in codes}
+        # Cumulative Gain Only: นับเฉพาะ % ที่เพิ่มขึ้น
+        cumulative_points = {code: 0.0 for code in codes}
+        prev_pct = {code: 0.0 for code in codes}
         
         result_history = []
-        prev_percentages = None
-        total_base_votes = 0  # ฐานโหวตรวมสะสม
         
         for i, entry in enumerate(history_data):
             current_pct = entry['data']
@@ -1463,100 +1471,36 @@ def calculate_votes_and_money():
                 'codes': {}
             }
             
-            if i == 0:
-                # ครั้งแรก - ใช้ % โดยตรงเป็นฐาน
-                # สมมติฐานโหวตเริ่มต้น = 100,000 คะแนน (100%)
-                initial_base = 100000
-                total_base_votes = initial_base
+            # Cumulative Gain Only: นับเฉพาะ % ที่เพิ่มขึ้น
+            for code in codes:
+                curr = current_pct.get(code, 0)
+                prev = prev_pct.get(code, 0)
                 
-                for code in codes:
-                    pct = current_pct.get(code, 0)
-                    points = (pct / 100) * initial_base
-                    money = points * BAHT_PER_POINT
-                    
-                    cumulative_points[code] = points
-                    cumulative_money[code] = money
-                    
-                    hour_data['codes'][code] = {
-                        'percentage': pct,
-                        'points': round(points),
-                        'money': round(money),
-                        'points_added': round(points),
-                        'money_added': round(money)
-                    }
+                # นับเฉพาะ % ที่เพิ่มขึ้น
+                points_added = 0
+                if curr > prev:
+                    delta = curr - prev
+                    points_added = (delta / 100) * BASE_TOTAL_VOTES
+                    cumulative_points[code] += points_added
                 
-                hour_data['total_base_votes'] = total_base_votes
-                hour_data['total_money'] = round(total_base_votes * BAHT_PER_POINT)
+                points = cumulative_points[code]
+                money = points * BAHT_PER_POINT
                 
-            else:
-                # ครั้งถัดไป - คำนวณจากการเปลี่ยนแปลง %
-                # หาว่ามีการเพิ่มคะแนนใหม่เท่าไหร่
+                hour_data['codes'][code] = {
+                    'percentage': curr,
+                    'points': round(points),
+                    'money': round(money),
+                    'points_added': round(points_added),
+                    'money_added': round(points_added * BAHT_PER_POINT)
+                }
                 
-                # คำนวณ new votes ที่เข้ามาในชั่วโมงนี้
-                # โดยดูจาก % ที่เปลี่ยนแปลง
-                
-                # หาผู้ที่ % เพิ่มขึ้น
-                max_pct_increase = 0
-                for code in codes:
-                    curr = current_pct.get(code, 0)
-                    prev = prev_percentages.get(code, 0)
-                    if curr > prev:
-                        # มีคนโหวตเพิ่ม
-                        max_pct_increase = max(max_pct_increase, curr - prev)
-                
-                # ประมาณ new votes จาก % change
-                # ถ้า % เปลี่ยน แสดงว่ามี votes ใหม่เข้ามา
-                # คำนวณ: new_votes = delta_pct * POINTS_PER_PERCENT * scale_factor
-                
-                if max_pct_increase > 0:
-                    # มี votes ใหม่เข้ามา
-                    # ประมาณจำนวน votes ใหม่
-                    new_votes_this_hour = 0
-                    
-                    for code in codes:
-                        curr = current_pct.get(code, 0)
-                        prev = prev_percentages.get(code, 0)
-                        
-                        if curr > prev:
-                            # คำนวณ points ที่เพิ่ม
-                            # delta% * 1000 = points added
-                            delta_pct = curr - prev
-                            points_added = delta_pct * POINTS_PER_PERCENT
-                            new_votes_this_hour += points_added
-                    
-                    total_base_votes += new_votes_this_hour
-                
-                # คำนวณ points ปัจจุบันของแต่ละคนจาก % ใหม่
-                for code in codes:
-                    pct = current_pct.get(code, 0)
-                    prev_pct = prev_percentages.get(code, 0)
-                    
-                    # คะแนนปัจจุบัน = % * total_base
-                    new_points = (pct / 100) * total_base_votes
-                    
-                    # คะแนนต้องไม่ลดลง
-                    if new_points < cumulative_points[code]:
-                        new_points = cumulative_points[code]
-                    
-                    points_added = new_points - cumulative_points[code]
-                    money_added = points_added * BAHT_PER_POINT
-                    
-                    cumulative_points[code] = new_points
-                    cumulative_money[code] = new_points * BAHT_PER_POINT
-                    
-                    hour_data['codes'][code] = {
-                        'percentage': pct,
-                        'points': round(cumulative_points[code]),
-                        'money': round(cumulative_money[code]),
-                        'points_added': round(points_added),
-                        'money_added': round(money_added)
-                    }
-                
-                hour_data['total_base_votes'] = round(total_base_votes)
-                hour_data['total_money'] = round(total_base_votes * BAHT_PER_POINT)
+                prev_pct[code] = curr
+            
+            total_points = sum(cumulative_points.values())
+            hour_data['total_base_votes'] = round(total_points)
+            hour_data['total_money'] = round(total_points * BAHT_PER_POINT)
             
             result_history.append(hour_data)
-            prev_percentages = current_pct.copy()
         
         # สรุปล่าสุด
         latest_summary = []
@@ -1564,17 +1508,24 @@ def calculate_votes_and_money():
             latest_summary.append({
                 'code': code,
                 'points': round(cumulative_points[code]),
-                'money': round(cumulative_money[code])
+                'money': round(cumulative_points[code] * BAHT_PER_POINT)
             })
         
         latest_summary.sort(key=lambda x: x['points'], reverse=True)
+        
+        # Debug: Print YND06 and YND10 values
+        for item in latest_summary:
+            if item['code'] in ['YND06', 'YND10']:
+                print(f"DEBUG API: {item['code']} = {item['points']}")
+        
+        total_votes = sum(cumulative_points.values())
         
         return {
             'history': result_history,
             'codes': codes,
             'latest_summary': latest_summary,
-            'total_base_votes': round(total_base_votes),
-            'total_money': round(total_base_votes * BAHT_PER_POINT),
+            'total_base_votes': round(total_votes),
+            'total_money': round(total_votes * BAHT_PER_POINT),
             'rates': {
                 'points_per_percent': POINTS_PER_PERCENT,
                 'baht_per_point': BAHT_PER_POINT,
