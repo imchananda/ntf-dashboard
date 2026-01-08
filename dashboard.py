@@ -763,6 +763,377 @@ DASHBOARD_HTML = '''
             font-size: 0.85rem;
             margin-top: 8px;
         }
+        
+        /* Prediction Section */
+        .prediction-section {
+            background: linear-gradient(135deg, rgba(72, 130, 195, 0.2), rgba(30, 41, 59, 0.8), rgba(251, 191, 36, 0.15));
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(72, 130, 195, 0.3);
+        }
+        
+        .pred-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .pred-icon {
+            font-size: 1.8rem;
+        }
+        
+        .pred-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #48dbfb, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .pred-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .pred-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pred-card {
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .pred-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .pred-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .pred-gap { color: #f87171; }
+        .pred-votes { color: #38bdf8; }
+        .pred-cost { color: #4ade80; }
+        
+        .pred-unit {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        /* Countdown Box */
+        .countdown-box {
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .countdown-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .countdown-time {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        
+        .countdown-deadline-label {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        
+        .countdown-deadline {
+            font-size: 1.1rem;
+            color: #e2e8f0;
+        }
+        
+        /* Projection Section */
+        .projection-section {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.15));
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            margin-bottom: 15px;
+        }
+        
+        .proj-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .proj-icon {
+            font-size: 1.3rem;
+        }
+        
+        .proj-title {
+            font-weight: bold;
+            color: #c4b5fd;
+            margin: 0;
+        }
+        
+        .proj-note {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .proj-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .proj-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .proj-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .proj-scenario {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        
+        .surge-input {
+            width: 60px;
+            padding: 5px 8px;
+            border-radius: 6px;
+            background: rgba(51, 65, 85, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #c4b5fd;
+            font-weight: bold;
+            text-align: center;
+            margin-left: 8px;
+        }
+        
+        .surge-x {
+            color: #a78bfa;
+        }
+        
+        .proj-item {
+            margin-bottom: 12px;
+        }
+        
+        .proj-item-blue {
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .proj-item-label {
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+        }
+        
+        .ynd10-label { color: #fbbf24; }
+        .ynd06-label { color: #38bdf8; }
+        
+        .proj-item-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        .ynd10-value { color: #fef08a; }
+        .ynd06-value { color: #7dd3fc; }
+        
+        .proj-item-cost {
+            font-size: 0.8rem;
+            color: #4ade80;
+            margin-top: 5px;
+        }
+        
+        .proj-rates {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 12px;
+        }
+        
+        .rate-blue { color: #38bdf8; }
+        .rate-yellow { color: #fbbf24; }
+        
+        .pred-status {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+        }
+        
+        /* Main Grid for Standings and Chart */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Standings Section */
+        .standings-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .standings-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        
+        .leaderboard-item:hover {
+            transform: scale(1.01);
+        }
+        
+        .leaderboard-item.rank-1 {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+        }
+        
+        .leaderboard-item.rank-2 {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+        }
+        
+        .leaderboard-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .leaderboard-rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .leaderboard-rank.gold { color: #fbbf24; }
+        .leaderboard-rank.blue { color: #38bdf8; }
+        
+        .leaderboard-info .code {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .leaderboard-info .pct {
+            font-size: 0.85rem;
+            margin-left: 8px;
+        }
+        
+        .leaderboard-info .pct.gold { color: #fbbf24; }
+        .leaderboard-info .pct.blue { color: #38bdf8; }
+        
+        .leaderboard-info .name {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .leaderboard-right {
+            text-align: right;
+        }
+        
+        .leaderboard-votes {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+        
+        .leaderboard-cost {
+            font-size: 0.9rem;
+            color: #4ade80;
+        }
+        
+        /* Chart Section */
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title-h2h {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #38bdf8;
+            margin: 0;
+        }
+        
+        .chart-subtitle {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .chart-canvas-container {
+            height: 300px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -778,28 +1149,168 @@ DASHBOARD_HTML = '''
         </div>
         
         <!-- Current Rankings -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="loading">กำลังโหลดข้อมูล...</div>
+        <!-- Vote Package Calculator -->
+        <h2 class="section-title">🛒 คำนวณการซื้อแพ็คเกจโหวต</h2>
+        
+        <div class="calculator-section">
+            <div class="calc-input-container">
+                <label for="budgetInput">💰 ใส่จำนวนเงิน (บาท):</label>
+                <input type="number" id="budgetInput" placeholder="เช่น 10000" min="0">
+                <button onclick="calculatePackages()" class="calc-btn">คำนวณ</button>
+            </div>
+            
+            <div class="package-info">
+                <div class="package-card">
+                    <div class="pkg-price">4,000 ฿</div>
+                    <div class="pkg-points">1,000 คะแนน</div>
+                    <div class="pkg-rate">4 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">450 ฿</div>
+                    <div class="pkg-points">100 คะแนน</div>
+                    <div class="pkg-rate">4.5 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">50 ฿</div>
+                    <div class="pkg-points">10 คะแนน</div>
+                    <div class="pkg-rate">5 ฿/คะแนน</div>
+                </div>
+                <div class="package-card">
+                    <div class="pkg-price">6 ฿</div>
+                    <div class="pkg-points">1 คะแนน</div>
+                    <div class="pkg-rate">6 ฿/คะแนน</div>
+                </div>
+            </div>
+            
+            <div class="calc-result" id="calcResult" style="display: none;">
+                <div class="result-title">📋 สรุปการซื้อแพ็คเกจ</div>
+                <div class="result-content" id="resultContent"></div>
+                <div class="result-summary" id="resultSummary"></div>
+            </div>
         </div>
         
-        <!-- Current Summary Table -->
-        <div class="table-container">
-            <div class="chart-title">📋 สรุปอันดับปัจจุบัน (%, คะแนน, เงิน)</div>
-            <table id="summaryTable">
-                <thead>
-                    <tr>
-                        <th>อันดับ</th>
-                        <th>รหัส</th>
-                        <th>ชื่อคู่</th>
-                        <th>% ล่าสุด</th>
-                        <th>คะแนนสะสม</th>
-                        <th>มูลค่า (บาท)</th>
-                        <th>สัดส่วน</th>
-                    </tr>
-                </thead>
-                <tbody id="summaryBody">
-                </tbody>
-            </table>
+        <!-- YND06 Victory Prediction -->
+        <div class="prediction-section">
+            <div class="pred-header">
+                <span class="pred-icon">🎯</span>
+                <h2 class="pred-title">YND06 ต้องโหวตอีกเท่าไหร่จะชนะ YND10?</h2>
+            </div>
+            
+            <div class="pred-grid">
+                <div class="pred-card">
+                    <div class="pred-label">ห่างอยู่</div>
+                    <div class="pred-value pred-gap" id="predGap">-</div>
+                    <div class="pred-unit">คะแนน</div>
+                </div>
+                
+                <div class="pred-card">
+                    <div class="pred-label">YND06 ต้องเพิ่มอีก</div>
+                    <div class="pred-value pred-votes" id="predVotes">-</div>
+                    <div class="pred-unit">คะแนน (เพื่อชนะ)</div>
+                </div>
+                
+                <div class="pred-card">
+                    <div class="pred-label">ต้องใช้เงินอีก</div>
+                    <div class="pred-value pred-cost" id="predCost">-</div>
+                    <div class="pred-unit">บาท</div>
+                </div>
+            </div>
+            
+            <!-- Countdown -->
+            <div class="countdown-box">
+                <div class="countdown-left">
+                    <div class="countdown-label">⏰ เหลือเวลาโหวต</div>
+                    <div class="countdown-time" id="predCountdown">--:--:--</div>
+                </div>
+                <div class="countdown-right">
+                    <div class="countdown-deadline-label">หมดเขต</div>
+                    <div class="countdown-deadline">9 ม.ค. 2569 เวลา 12:00 น.</div>
+                </div>
+            </div>
+            
+            <!-- Projection Model -->
+            <div class="projection-section">
+                <div class="proj-header">
+                    <span class="proj-icon">🔮</span>
+                    <h3 class="proj-title">คาดการณ์ ณ เวลาปิดโหวต</h3>
+                    <span class="proj-note">(คำนวนจากอัตราโหวต 6 ชม.ล่าสุด)</span>
+                </div>
+                
+                <div class="proj-grid">
+                    <!-- Normal Scenario -->
+                    <div class="proj-card">
+                        <div class="proj-scenario">📈 Scenario 1: อัตราปกติ</div>
+                        
+                        <div class="proj-item">
+                            <div class="proj-item-label ynd10-label">YND10 จะปิดที่ประมาณ:</div>
+                            <div class="proj-item-value ynd10-value" id="projYnd10Normal">-</div>
+                        </div>
+                        
+                        <div class="proj-item-blue">
+                            <div class="proj-item-label ynd06-label">YND06 ต้องโหวตเพิ่มอีก (เพื่อชนะ):</div>
+                            <div class="proj-item-value ynd06-value" id="projYnd06NeededNormal">-</div>
+                            <div class="proj-item-cost" id="projYnd06CostNormal">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Surge Scenario -->
+                    <div class="proj-card">
+                        <div class="proj-scenario">
+                            🚀 Scenario 2: สปริ้นท์ 3 ชม.สุดท้าย 
+                            <input type="number" id="surgeMultiplier" value="100" min="1" max="1000" class="surge-input" onchange="recalculateSurge()">
+                            <span class="surge-x">x</span>
+                        </div>
+                        
+                        <div class="proj-item">
+                            <div class="proj-item-label ynd10-label">YND10 จะปิดที่ประมาณ:</div>
+                            <div class="proj-item-value ynd10-value" id="projYnd10Surge">-</div>
+                        </div>
+                        
+                        <div class="proj-item-blue">
+                            <div class="proj-item-label ynd06-label">YND06 ต้องโหวตเพิ่มอีก (เพื่อชนะ):</div>
+                            <div class="proj-item-value ynd06-value" id="projYnd06NeededSurge">-</div>
+                            <div class="proj-item-cost" id="projYnd06CostSurge">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Growth Rate Info -->
+                <div class="proj-rates">
+                    <span>📊 YND06 อัตราปัจจุบัน: <span id="projRateYnd06" class="rate-blue">-</span> votes/hr</span>
+                    <span>📊 YND10 อัตราปัจจุบัน: <span id="projRateYnd10" class="rate-yellow">-</span> votes/hr</span>
+                </div>
+            </div>
+            
+            <!-- Status Message -->
+            <div class="pred-status" id="predStatus">
+                <!-- Dynamic status message -->
+            </div>
+        </div>
+        
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Left: Current Standings -->
+            <div class="standings-section">
+                <div class="standings-card">
+                    <h2 class="standings-title">🏆 Current Standings</h2>
+                    <div id="leaderboard" class="leaderboard-container">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Head-to-Head Chart -->
+            <div class="chart-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2 class="chart-title-h2h">⚔️ Head-to-Head: YND06 vs YND10</h2>
+                        <div class="chart-subtitle">Vote Growth Over Time</div>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="h2hChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- History Section -->
@@ -853,51 +1364,7 @@ DASHBOARD_HTML = '''
             </div>
         </div>
         
-        <!-- Timeline Chart -->
-        <div class="table-container" style="margin-top: 30px;">
-            <div class="chart-title">📉 กราฟแนวโน้มคะแนน (วันที่เลือก)</div>
-            <canvas id="timelineChart" height="80"></canvas>
-        </div>
-        
-        <!-- Vote Package Calculator -->
-        <h2 class="section-title">🛒 คำนวณการซื้อแพ็คเกจโหวต</h2>
-        
-        <div class="calculator-section">
-            <div class="calc-input-container">
-                <label for="budgetInput">💰 ใส่จำนวนเงิน (บาท):</label>
-                <input type="number" id="budgetInput" placeholder="เช่น 10000" min="0">
-                <button onclick="calculatePackages()" class="calc-btn">คำนวณ</button>
-            </div>
-            
-            <div class="package-info">
-                <div class="package-card">
-                    <div class="pkg-price">4,000 ฿</div>
-                    <div class="pkg-points">1,000 คะแนน</div>
-                    <div class="pkg-rate">4 ฿/คะแนน</div>
-                </div>
-                <div class="package-card">
-                    <div class="pkg-price">450 ฿</div>
-                    <div class="pkg-points">100 คะแนน</div>
-                    <div class="pkg-rate">4.5 ฿/คะแนน</div>
-                </div>
-                <div class="package-card">
-                    <div class="pkg-price">50 ฿</div>
-                    <div class="pkg-points">10 คะแนน</div>
-                    <div class="pkg-rate">5 ฿/คะแนน</div>
-                </div>
-                <div class="package-card">
-                    <div class="pkg-price">6 ฿</div>
-                    <div class="pkg-points">1 คะแนน</div>
-                    <div class="pkg-rate">6 ฿/คะแนน</div>
-                </div>
-            </div>
-            
-            <div class="calc-result" id="calcResult" style="display: none;">
-                <div class="result-title">📋 สรุปการซื้อแพ็คเกจ</div>
-                <div class="result-content" id="resultContent"></div>
-                <div class="result-summary" id="resultSummary"></div>
-            </div>
-        </div>
+
     </div>
 
     <div class="auto-refresh">
@@ -905,15 +1372,252 @@ DASHBOARD_HTML = '''
     </div>
     
     <script>
-        let timelineChart;
+        let h2hChart;
         let allData = null;
         let selectedDate = null;
         let availableDates = [];
+        let cachedProjection = null;
         
         const colors = [
             '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1',
             '#5f27cd', '#54a0ff', '#00d2d3', '#ff9f43', '#ee5a24'
         ];
+        
+        // Voting Deadline: Jan 9, 2026 12:00 (Bangkok Time)
+        const VOTE_DEADLINE = new Date('2026-01-09T12:00:00+07:00');
+        
+        // Countdown Timer
+        function updateCountdown() {
+            const now = new Date();
+            const diff = VOTE_DEADLINE - now;
+            
+            if (diff <= 0) {
+                document.getElementById('predCountdown').innerHTML = '<span style="color: #f87171;">หมดเวลาแล้ว!</span>';
+                return;
+            }
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('predCountdown').innerText = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Start countdown
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        
+        function formatMoney(n) {
+            return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n);
+        }
+        
+        function recalculateSurge() {
+            if (!cachedProjection) return;
+            
+            const multiplier = parseInt(document.getElementById('surgeMultiplier').value) || 100;
+            const proj = cachedProjection;
+            
+            const hoursRemaining = proj.hours_remaining || 0;
+            const surgeHours = Math.min(3, hoursRemaining);
+            const normalHours = hoursRemaining - surgeHours;
+            
+            const ynd10Rate = proj.ynd10.rate_per_hour || 0;
+            const ynd06Current = proj.ynd06.current || 0;
+            const ynd10Current = proj.ynd10.current || 0;
+            
+            // Calculate YND10 closing with custom surge
+            const ynd10ClosingSurge = ynd10Current + (ynd10Rate * normalHours) + (ynd10Rate * multiplier * surgeHours);
+            const ynd06NeededSurge = Math.max(0, ynd10ClosingSurge - ynd06Current + 1);
+            const ynd06CostSurge = ynd06NeededSurge * 4;
+            
+            document.getElementById('projYnd10Surge').innerText = formatNumber(Math.round(ynd10ClosingSurge));
+            document.getElementById('projYnd06NeededSurge').innerText = formatNumber(Math.round(ynd06NeededSurge)) + ' โหวต';
+            document.getElementById('projYnd06CostSurge').innerText = '≈ ' + formatMoney(Math.round(ynd06CostSurge));
+        }
+        
+        function renderLeaderboard(votes) {
+            if (!votes || !votes.latest_summary) return;
+            
+            const lb = document.getElementById('leaderboard');
+            lb.innerHTML = '';
+            
+            // Filter to only YND10 and YND06
+            const filtered = votes.latest_summary.filter(item => item.code === 'YND10' || item.code === 'YND06');
+            filtered.sort((a, b) => b.points - a.points);
+            
+            filtered.forEach((item, index) => {
+                const rankClass = index === 0 ? 'rank-1' : 'rank-2';
+                const rankColor = index === 0 ? 'gold' : 'blue';
+                
+                // Get name from allData.current.summary
+                const nameData = allData?.current?.summary?.find(s => s.code === item.code);
+                const name = nameData?.names || '';
+                const pct = nameData?.percentage || 0;
+                
+                lb.innerHTML += `
+                    <div class="leaderboard-item ${rankClass}">
+                        <div class="leaderboard-left">
+                            <div class="leaderboard-rank ${rankColor}">#${index + 1}</div>
+                            <div class="leaderboard-info">
+                                <div>
+                                    <span class="code">${item.code}</span>
+                                    <span class="pct ${rankColor}">${pct.toFixed(2)}%</span>
+                                </div>
+                                <div class="name">${name}</div>
+                            </div>
+                        </div>
+                        <div class="leaderboard-right">
+                            <div class="leaderboard-votes">${formatNumber(item.points)}</div>
+                            <div class="leaderboard-cost">${formatMoney(item.money)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Render Prediction (YND06 vs YND10)
+            const ynd06Data = votes.latest_summary.find(s => s.code === 'YND06');
+            const ynd10Data = votes.latest_summary.find(s => s.code === 'YND10');
+            
+            if (ynd06Data && ynd10Data) {
+                const gap = ynd10Data.points - ynd06Data.points;
+                const votesNeeded = gap + 1; // +1 to win
+                const costNeeded = votesNeeded * 4;
+                
+                document.getElementById('predGap').innerText = formatNumber(Math.abs(gap));
+                document.getElementById('predVotes').innerText = formatNumber(votesNeeded > 0 ? votesNeeded : 0);
+                document.getElementById('predCost').innerText = formatMoney(costNeeded > 0 ? costNeeded : 0);
+            }
+        }
+        
+        function calculateProjection(votes) {
+            if (!votes || !votes.history || votes.history.length < 2) return;
+            
+            // Deadline: Jan 9, 2026 12:00
+            const deadline = new Date('2026-01-09T12:00:00+07:00');
+            const now = new Date();
+            const hoursRemaining = Math.max(0, (deadline - now) / (1000 * 60 * 60));
+            
+            // Calculate hourly growth rate from last 6 hours of data
+            const recent = votes.history.slice(-6);
+            if (recent.length < 2) return;
+            
+            const first = recent[0];
+            const last = recent[recent.length - 1];
+            
+            // Parse time strings to calculate time diff
+            const parseTime = (timeStr) => {
+                const parts = timeStr.split(' ');
+                if (parts.length < 2) return new Date();
+                const [day, month] = parts[0].split('/').map(Number);
+                const [hour, min] = parts[1].split(':').map(Number);
+                return new Date(2026, month - 1, day, hour, min);
+            };
+            
+            const timeDiffHours = (parseTime(last.time) - parseTime(first.time)) / (1000 * 60 * 60);
+            if (timeDiffHours <= 0) return;
+            
+            const ynd06First = first.codes['YND06']?.points || 0;
+            const ynd06Last = last.codes['YND06']?.points || 0;
+            const ynd06Rate = (ynd06Last - ynd06First) / timeDiffHours;
+            
+            const ynd10First = first.codes['YND10']?.points || 0;
+            const ynd10Last = last.codes['YND10']?.points || 0;
+            const ynd10Rate = (ynd10Last - ynd10First) / timeDiffHours;
+            
+            const ynd06Current = ynd06Last;
+            const ynd10Current = ynd10Last;
+            
+            // Normal scenario
+            const ynd10ClosingNormal = ynd10Current + (ynd10Rate * hoursRemaining);
+            const ynd06NeededNormal = Math.max(0, ynd10ClosingNormal - ynd06Current + 1);
+            const ynd06CostNormal = ynd06NeededNormal * 4;
+            
+            document.getElementById('projYnd10Normal').innerText = formatNumber(Math.round(ynd10ClosingNormal));
+            document.getElementById('projYnd06NeededNormal').innerText = formatNumber(Math.round(ynd06NeededNormal)) + ' โหวต';
+            document.getElementById('projYnd06CostNormal').innerText = '≈ ' + formatMoney(Math.round(ynd06CostNormal));
+            
+            // Growth rates
+            document.getElementById('projRateYnd06').innerText = formatNumber(Math.round(ynd06Rate));
+            document.getElementById('projRateYnd10').innerText = formatNumber(Math.round(ynd10Rate));
+            
+            // Cache for surge recalculation
+            cachedProjection = {
+                hours_remaining: hoursRemaining,
+                ynd06: { current: ynd06Current, rate_per_hour: ynd06Rate },
+                ynd10: { current: ynd10Current, rate_per_hour: ynd10Rate }
+            };
+            
+            // Calculate surge
+            recalculateSurge();
+            
+            // Status message
+            const statusEl = document.getElementById('predStatus');
+            if (ynd06NeededNormal <= 0) {
+                statusEl.innerHTML = `<span style="font-size: 1.5rem;">🎉</span> <span style="font-size: 1.2rem; font-weight: bold; color: #38bdf8;">YND06 กำลังนำอยู่!</span>`;
+            } else if (ynd06NeededNormal > 5000) {
+                statusEl.innerHTML = `<span style="font-size: 1.5rem;">⚠️</span> <span style="font-size: 1.2rem; font-weight: bold; color: #fbbf24;">ต้องเร่งโหวต YND06 มากขึ้น!</span>`;
+            } else {
+                statusEl.innerHTML = `<span style="font-size: 1.5rem;">🔥</span> <span style="font-size: 1.2rem; font-weight: bold; color: #fb923c;">สูสี! เร่งโหวต YND06 ก่อนหมดเวลา!</span>`;
+            }
+        }
+        
+        function renderH2HChart(votes) {
+            if (!votes || !votes.history || votes.history.length === 0) return;
+            
+            const labels = votes.history.map(h => {
+                const time = h.time.split(' ')[1] || h.time;
+                return time;
+            });
+            
+            const ynd06Data = votes.history.map(h => h.codes['YND06']?.points || 0);
+            const ynd10Data = votes.history.map(h => h.codes['YND10']?.points || 0);
+            
+            const ctx = document.getElementById('h2hChart').getContext('2d');
+            
+            if (h2hChart) h2hChart.destroy();
+            h2hChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'YND06',
+                            data: ynd06Data,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'YND10',
+                            data: ynd10Data,
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: '#cbd5e1' } } },
+                    scales: {
+                        y: { 
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+                        }
+                    }
+                }
+            });
+        }
         
         // Tab switching
         function showTab(tabName) {
@@ -992,20 +1696,7 @@ DASHBOARD_HTML = '''
             
             const summary = data.summary;
             
-            // Stats Cards
-            let statsHtml = '';
-            summary.forEach((item, index) => {
-                const isLeader = index === 0;
-                statsHtml += `
-                    <div class="stat-card ${isLeader ? 'leader' : ''}">
-                        <div class="rank">${isLeader ? '👑 #1' : '#' + (index + 1)}</div>
-                        <div class="code">${item.code}</div>
-                        <div class="percentage">${item.percentage.toFixed(2)}%</div>
-                        <div class="names">${item.names}</div>
-                    </div>
-                `;
-            });
-            document.getElementById('statsGrid').innerHTML = statsHtml;
+
             
             updateCharts(summary);
         }
@@ -1036,31 +1727,10 @@ DASHBOARD_HTML = '''
             `;
             document.getElementById('summaryStats').innerHTML = summaryHtml;
             
-            // Summary Table with votes and money
-            let summaryBodyHtml = '';
-            if (data.latest_summary && allData.current.summary) {
-                allData.current.summary.forEach((item, index) => {
-                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other';
-                    const voteData = data.latest_summary.find(v => v.code === item.code) || {};
-                    
-                    summaryBodyHtml += `
-                        <tr>
-                            <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
-                            <td><strong>${item.code}</strong></td>
-                            <td style="font-size: 0.85rem;">${item.names}</td>
-                            <td><strong>${item.percentage.toFixed(2)}%</strong></td>
-                            <td class="votes-highlight">${formatNumber(voteData.points || 0)}</td>
-                            <td class="money-highlight">${formatNumber(voteData.money || 0)} ฿</td>
-                            <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${item.percentage}%"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-            document.getElementById('summaryBody').innerHTML = summaryBodyHtml;
+            // Render new sections
+            renderLeaderboard(data);
+            calculateProjection(data);
+            renderH2HChart(data);
             
             // Filter history by selected date
             const filteredHistory = data.history?.filter(h => {
@@ -1164,49 +1834,14 @@ DASHBOARD_HTML = '''
             document.getElementById('votesBody').innerHTML = votesBodyHtml;
             document.getElementById('moneyBody').innerHTML = moneyBodyHtml;
             
-            // Timeline Chart for selected date
-            updateTimelineChart(filteredHistory, codes);
+
         }
         
         function updateCharts(summary) {
             // Charts removed
         }
         
-        function updateTimelineChart(history, codes) {
-            if (!history || history.length === 0) return;
-            
-            const labels = history.map(h => {
-                const time = h.time.split(' ')[1] || h.time;
-                return time;
-            });
-            
-            const datasets = codes.map((code, index) => ({
-                label: code,
-                data: history.map(h => h.codes[code]?.percentage || 0),
-                borderColor: colors[index % colors.length],
-                backgroundColor: 'transparent',
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 3
-            }));
-            
-            if (timelineChart) timelineChart.destroy();
-            timelineChart = new Chart(document.getElementById('timelineChart'), {
-                type: 'line',
-                data: { labels, datasets },
-                options: {
-                    responsive: true,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { position: 'top', labels: { color: '#fff', padding: 10, usePointStyle: true } }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#fff' } }
-                    }
-                }
-            });
-        }
+
         
         // Initial load
         fetchAllData();
